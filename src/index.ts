@@ -11,6 +11,16 @@ import { formatSearchResults, formatExploreResults } from './formatter.js';
 import { XwebError } from './types.js';
 import type { FetchOptions } from './types.js';
 
+// Gracefully handle EPIPE (broken pipe, e.g. `xweb ... | head`)
+process.stdout.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') process.exit(0);
+  throw err;
+});
+process.stderr.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') process.exit(0);
+  throw err;
+});
+
 const program = new Command();
 
 program
