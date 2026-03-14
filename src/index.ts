@@ -1,0 +1,109 @@
+import { Command } from 'commander';
+import { loadConfig } from './config.js';
+import { createDefaultRegistry, executeSearch } from './search.js';
+import { createSimpleProvider } from './providers/simple.js';
+import { createBraveProvider } from './providers/brave.js';
+import { createTavilyProvider } from './providers/tavily.js';
+import { createSerperProvider } from './providers/serper.js';
+import { executeFetch } from './fetch.js';
+import { executeExplore } from './explore.js';
+import { formatSearchResults, formatExploreResults } from './formatter.js';
+import { XwebError } from './types.js';
+import type { FetchOptions } from './types.js';
+
+const program = new Command();
+
+program
+  .name('xweb')
+  .description('AI Agent 互联网访问 CLI 工具')
+  .version('1.0.0')
+  .showHelpAfterError(true);
+
+// Search command
+program
+  .command('search <query>')
+  .description('搜索互联网')
+  .option('--provider <name>', '指定搜索引擎 Provider')
+  .option('--limit <n>', '限制结果数量', '5')
+  .option('--deep', '启用深度搜索', false)
+  .option('--json', '输出 JSON 格式', false)
+  .action(async (query: string, opts: { provider?: string; limit: string; deep: boolean; json: boolean }) => {
+    const config = loadConfig();
+    const registry = createDefaultRegistry();
+
+    // Register simple provider as fallback
+    registry.register(createSimpleProvider());
+
+    // Register API providers if configured
+    for (const [name, providerConfig] of Object.entries(config.providers)) {
+      if (providerConfig.api_key) {
+        switch (name) {
+          case 'brave':
+            registry.register(createBraveProvider(providerConfig.api_key, providerConfig.base_url));
+            break;
+          case 'tavily':
+            registry.register(createTavilyProvider(providerConfig.api_key, providerConfig.base_url));
+            break;
+          case 'serper':
+            registry.register(createSerperProvider(providerConfig.api_key, providerConfig.base_url));
+            break;
+        }
+      }
+    }
+
+    const results = await executeSearch(
+      query,
+      { limit: parseInt(opts.limit, 10) || 5, deep: opts.deep },
+      config,
+      registry,
+      opts.provider,
+    );
+
+    console.log(formatSearchResults(results, opts.json));
+  });
+
+// Fetch command
+program
+  .command('fetch <url>')
+  .description('抓取网页内容')
+  .option('--format <type>', '输出格式: markdown|text|html|json', 'markdown')
+  .option('--raw', '跳过 HTML 清洗', false)
+  .option('--selector <css>', 'CSS 选择器提取')
+  .action(async (url: string, opts: { format: string; raw: boolean; selector?: string }) => {
+    const config = loadConfig();
+    const fetchOptions: FetchOptions = {
+      format: (opts.format as FetchOptions['format']) || 'markdown',
+      raw: opts.raw,
+      ...(opts.selector !== undefined ? { selector: opts.selector } : {}),
+    };
+
+    const result = await executeFetch(url, fetchOptions, config);
+    console.log(result);
+  });
+
+// Explore command
+program
+  .command('explore <url>')
+  .description('发现网站内部链接')
+  .option('--json', '输出 JSON 格式', false)
+  .action(async (url: string, opts: { json: boolean }) => {
+    const config = loadConfig();
+    const results = await executeExplore(url, opts, config);
+    console.log(formatExploreResults(results, opts.json));
+  });
+
+// Global error handling
+async function main() {
+  try {
+    await program.parseAsync(process.argv);
+  } catch (error) {
+    if (error instanceof XwebError) {
+      console.error(`Error [${error.code}]: ${error.message}`);
+      process.exit(1);
+    }
+    console.error(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
+}
+
+main();
