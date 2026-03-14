@@ -19,12 +19,9 @@ import type { ExploreResult } from '../../src/types.js';
 const exploreResultArrayArb = fc
   .array(
     fc.record({
-      // Generate a base path segment
       path: fc.stringMatching(/^[a-z][a-z0-9\-]{0,9}$/),
       title: fc.stringMatching(/^[A-Za-z][A-Za-z0-9 ]{0,14}$/),
-      // Optionally add hash fragment
       hash: fc.oneof(fc.constant(''), fc.stringMatching(/^#[a-z]{1,6}$/)),
-      // Optionally add trailing slash
       trailingSlash: fc.boolean(),
     }),
     { minLength: 1, maxLength: 20 },

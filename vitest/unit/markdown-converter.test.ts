@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { htmlToMarkdown, htmlToText, generateFrontMatter } from './markdown-converter.js';
+import { htmlToMarkdown, htmlToText, generateFrontMatter } from '../../src/markdown-converter.js';
 
 describe('generateFrontMatter', () => {
   it('generates YAML front matter with title and source', () => {

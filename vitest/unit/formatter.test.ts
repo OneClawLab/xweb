@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatSearchResults, formatExploreResults, formatFetchedContent } from './formatter.js';
-import type { SearchResult, ExploreResult, FetchedContent } from './types.js';
+import { formatSearchResults, formatExploreResults, formatFetchedContent } from '../../src/formatter.js';
+import type { SearchResult, ExploreResult, FetchedContent } from '../../src/types.js';
 
 describe('formatSearchResults', () => {
   const results: SearchResult[] = [

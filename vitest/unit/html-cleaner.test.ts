@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanHtml, extractBySelector } from './html-cleaner.js';
+import { cleanHtml, extractBySelector } from '../../src/html-cleaner.js';
 
 describe('cleanHtml', () => {
   it('removes nav, footer, script, style, iframe, noscript tags', () => {

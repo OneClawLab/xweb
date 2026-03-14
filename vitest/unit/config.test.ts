@@ -13,7 +13,7 @@ vi.mock('node:fs', () => ({
 }));
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { getDefaultConfig, loadConfig, saveConfig } from './config.js';
+import { getDefaultConfig, loadConfig, saveConfig } from '../../src/config.js';
 
 const mockedExistsSync = vi.mocked(existsSync);
 const mockedReadFileSync = vi.mocked(readFileSync);

@@ -4,9 +4,9 @@ import {
   resolveProvider,
   executeSearch,
   createDefaultRegistry,
-} from './search.js';
-import type { SearchProvider, SearchOptions, XwebConfig } from './types.js';
-import { ProviderError } from './types.js';
+} from '../../src/search.js';
+import type { SearchProvider, SearchOptions, XwebConfig } from '../../src/types.js';
+import { ProviderError } from '../../src/types.js';
 
 function makeProvider(name: string, results: number = 10): SearchProvider {
   return {

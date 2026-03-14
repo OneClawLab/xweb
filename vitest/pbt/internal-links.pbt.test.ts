@@ -16,7 +16,6 @@ const BASE_URL = `https://${BASE_DOMAIN}`;
 
 /**
  * Generator for a mix of internal and external links embedded in HTML.
- * Internal links use the base domain; external links use a different domain.
  */
 const htmlWithLinksArb = fc
   .record({
@@ -39,15 +38,9 @@ const htmlWithLinksArb = fc
     const externalLinks = externalPaths.map(
       (p) => `<a href="https://${externalDomain}/${p}">External ${p}</a>`,
     );
-    // Interleave internal and external links
     const allLinks = [...internalLinks, ...externalLinks];
     const html = `<html><body>${allLinks.join('\n')}</body></html>`;
-    return {
-      html,
-      internalPaths,
-      externalDomain,
-      externalCount: externalPaths.length,
-    };
+    return { html, internalPaths, externalDomain, externalCount: externalPaths.length };
   });
 
 describe('Feature: xweb-cli, Property 10: 内部链接提取完整性', () => {

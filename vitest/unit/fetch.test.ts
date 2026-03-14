@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { executeFetch } from './fetch.js';
-import type { FetchOptions, XwebConfig } from './types.js';
-import { NetworkError, TimeoutError, ValidationError } from './types.js';
+import { executeFetch } from '../../src/fetch.js';
+import type { FetchOptions, XwebConfig } from '../../src/types.js';
+import { NetworkError, TimeoutError, ValidationError } from '../../src/types.js';
 
 const defaultConfig: XwebConfig = {
   default_provider: 'google',

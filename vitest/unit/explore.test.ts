@@ -4,9 +4,9 @@ import {
   extractInternalLinks,
   normalizeAndDedupe,
   executeExplore,
-} from './explore.js';
-import type { XwebConfig } from './types.js';
-import { ValidationError, NetworkError } from './types.js';
+} from '../../src/explore.js';
+import type { XwebConfig } from '../../src/types.js';
+import { ValidationError, NetworkError } from '../../src/types.js';
 
 const defaultConfig: XwebConfig = {
   default_provider: 'google',

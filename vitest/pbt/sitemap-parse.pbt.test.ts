@@ -22,7 +22,7 @@ const urlArrayArb = fc
     ),
     { minLength: 1, maxLength: 20 },
   )
-  .map((urls) => [...new Set(urls)]) // ensure unique URLs for clarity
+  .map((urls) => [...new Set(urls)])
   .filter((urls) => urls.length >= 1);
 
 /**
@@ -44,10 +44,8 @@ describe('Feature: xweb-cli, Property 9: Sitemap XML 解析提取所有 URL', ()
         const xml = buildSitemapXml(urls);
         const results = parseSitemap(xml);
 
-        // Number of results equals number of input URLs
         expect(results.length).toBe(urls.length);
 
-        // Each input URL appears in the results
         const resultUrls = results.map((r) => r.url);
         for (const url of urls) {
           expect(resultUrls).toContain(url);

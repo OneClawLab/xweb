@@ -39,7 +39,6 @@ describe('Feature: xweb-cli, Property 16: 无效 JSON 配置回退到默认值',
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Suppress console.error output during tests
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 

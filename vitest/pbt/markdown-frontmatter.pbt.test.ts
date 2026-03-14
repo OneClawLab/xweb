@@ -32,14 +32,9 @@ describe('Feature: xweb-cli, Property 15: Markdown 输出包含 YAML Front Matte
       fc.property(fetchedContentArb, (content: FetchedContent) => {
         const output = formatFetchedContent(content, 'markdown');
 
-        // Must start with YAML front matter delimiter
         expect(output).toMatch(/^---\n/);
-
-        // Must contain title and source field markers
         expect(output).toContain('title:');
         expect(output).toContain('source:');
-
-        // Must contain the actual title and source values
         expect(output).toContain(content.title);
         expect(output).toContain(content.source);
       }),

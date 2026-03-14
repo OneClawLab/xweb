@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BraveProvider, createBraveProvider } from './brave.js';
-import { TavilyProvider, createTavilyProvider } from './tavily.js';
-import { SerperProvider, createSerperProvider } from './serper.js';
-import { NetworkError } from '../types.js';
+import { BraveProvider, createBraveProvider } from '../../src/providers/brave.js';
+import { TavilyProvider, createTavilyProvider } from '../../src/providers/tavily.js';
+import { SerperProvider, createSerperProvider } from '../../src/providers/serper.js';
+import { NetworkError } from '../../src/types.js';
 
 // Mock global fetch
 const mockFetch = vi.fn();

@@ -20,14 +20,11 @@ describe('Feature: xweb-cli, Property 17: Text 格式剥离 HTML 标签', () => 
   it('text output should not contain any HTML tags but should preserve text content', () => {
     fc.assert(
       fc.property(fc.array(textContentArb, { minLength: 1, maxLength: 5 }), (texts) => {
-        // Build HTML with known text content
         const html = `<html><body>${texts.map((t, i) => `<p>${t}</p>`).join('')}</body></html>`;
         const output = htmlToText(html);
 
-        // Output must NOT contain any HTML tags
         expect(output).not.toMatch(/<[^>]*>/);
 
-        // Output SHOULD contain each text content piece
         for (const text of texts) {
           const trimmed = text.trim();
           if (trimmed.length > 0) {

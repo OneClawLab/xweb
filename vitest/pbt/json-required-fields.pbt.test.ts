@@ -31,15 +31,11 @@ describe('Feature: xweb-cli, Property 18: JSON 格式输出包含必需字段', 
       fc.property(fetchedContentArb, (content: FetchedContent) => {
         const output = formatFetchedContent(content, 'json');
 
-        // Output must be valid JSON (JSON.parse should not throw)
         const parsed = JSON.parse(output);
 
-        // Parsed object must have title, source, content fields
         expect(parsed).toHaveProperty('title');
         expect(parsed).toHaveProperty('source');
         expect(parsed).toHaveProperty('content');
-
-        // Field values must match the input
         expect(parsed.title).toBe(content.title);
         expect(parsed.source).toBe(content.source);
         expect(parsed.content).toBe(content.content);
