@@ -126,11 +126,6 @@ addSubcommandExamples(exploreCmd, 'explore');
 async function main() {
   try {
     await program.parseAsync(process.argv);
-    // Show help if no arguments (exit 0)
-    if (process.argv.length <= 2) {
-      program.outputHelp();
-      process.exitCode = 0;
-    }
   } catch (error) {
     // commander throws CommanderError on exitOverride
     if (error && typeof error === 'object' && 'exitCode' in error) {
