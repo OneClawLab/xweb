@@ -87,6 +87,12 @@ const searchCmd = program
       opts.provider,
     );
 
+    if (results.length === 0) {
+      process.stderr.write(`No results found for: ${query}\n`);
+      process.exitCode = 1;
+      return;
+    }
+
     console.log(formatSearchResults(results, opts.json));
   });
 addSubcommandExamples(searchCmd, 'search');
