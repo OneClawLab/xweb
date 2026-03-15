@@ -13,6 +13,7 @@ import { executeExplore } from './explore.js';
 import { formatSearchResults, formatExploreResults } from './formatter.js';
 import { XwebError, ValidationError } from './types.js';
 import { installHelp, addSubcommandExamples } from './help.js';
+import { handleConfig } from './commands/config.js';
 import type { FetchOptions } from './types.js';
 
 // Gracefully handle EPIPE (broken pipe, e.g. `xweb ... | head`)
@@ -121,6 +122,23 @@ const exploreCmd = program
     console.log(formatExploreResults(results, opts.json));
   });
 addSubcommandExamples(exploreCmd, 'explore');
+
+// Config command
+const configCmd = program
+  .command('config')
+  .description('管理搜索引擎 Provider 配置')
+  .option('--add', '添加 Provider（同名则 upsert）')
+  .option('--update', '更新已有 Provider')
+  .option('--show', '查看 Provider 配置（API key 脱敏）')
+  .option('--delete', '删除 Provider')
+  .option('--name <name>', 'Provider 名称')
+  .option('--set <kv...>', '设置键值对，如 api_key=xxx')
+  .option('--default-provider <name>', '设置默认搜索引擎')
+  .option('--json', 'JSON 输出')
+  .action((opts) => {
+    handleConfig(opts);
+  });
+addSubcommandExamples(configCmd, 'config');
 
 // Global error handling
 async function main() {

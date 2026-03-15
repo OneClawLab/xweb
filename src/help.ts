@@ -70,6 +70,15 @@ JSON output (--json):
 Note:
   优先解析 sitemap.xml，无 sitemap 时从页面提取内部链接。`;
 
+const CONFIG_EXAMPLES = `
+Examples:
+  $ xweb config                                        # 查看完整配置
+  $ xweb config --add --name brave --set api_key=BSA-xxx
+  $ xweb config --show --name brave                    # 查看（API key 脱敏）
+  $ xweb config --update --name brave --set base_url=https://...
+  $ xweb config --delete --name brave
+  $ xweb config --default-provider brave               # 设置默认搜索引擎`;
+
 // ── Setup functions ─────────────────────────────────────────
 
 export function installHelp(program: Command): void {
@@ -82,6 +91,7 @@ export function addSubcommandExamples(cmd: Command, name: string): void {
     'search': SEARCH_EXAMPLES,
     'fetch': FETCH_EXAMPLES,
     'explore': EXPLORE_EXAMPLES,
+    'config': CONFIG_EXAMPLES,
   };
   const text = examples[name];
   if (text) {
