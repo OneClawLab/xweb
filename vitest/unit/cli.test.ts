@@ -13,6 +13,7 @@ function runCli(args: string): { stdout: string; stderr: string; exitCode: numbe
     const stdout = execSync(`node "${CLI_PATH}" ${args}`, {
       encoding: 'utf-8',
       timeout: 5000,
+      stdio: 'pipe',
     });
     return { stdout, stderr: '', exitCode: 0 };
   } catch (error: any) {

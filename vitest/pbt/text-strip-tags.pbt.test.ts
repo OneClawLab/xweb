@@ -26,7 +26,7 @@ describe('Feature: xweb-cli, Property 17: Text 格式剥离 HTML 标签', () => 
         expect(output).not.toMatch(/<[^>]*>/);
 
         for (const text of texts) {
-          const trimmed = text.trim();
+          const trimmed = text.trim().replace(/\s+/g, ' ');
           if (trimmed.length > 0) {
             expect(output).toContain(trimmed);
           }
