@@ -63,7 +63,7 @@
 
 ### 3.1 核心 Provider 配置
 
-配置文件位于 `~/.config/xweb/config.json`:
+配置文件位于 `~/.config/xweb/default.json`:
 
 ```json
 {

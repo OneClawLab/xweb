@@ -39,7 +39,7 @@
 
 ### 7. 配置文件路径未在 --help 中提及
 - 规范要求: 如果有配置数据，SHOULD 告诉使用者在哪里
-- 现状: USAGE.md 中已说明配置文件路径 `~/.config/xweb/config.json`，但 --help 中没有
+- 现状: USAGE.md 中已说明配置文件路径 `~/.config/xweb/default.json`，但 --help 中没有
 - 整改: 在主命令 help 中注明配置文件路径
 
 ### 8. 子命令规范 — 每个子命令的 USAGE
@@ -52,7 +52,7 @@
 ### 9. 错误输出缺少修复建议
 - 规范要求: 错误信息 SHOULD 包含"什么错了"+"怎么修"
 - 现状: 错误格式为 `Error [CODE]: message`，大部分没有修复建议
-- 示例: ProviderError 应补充 "Check your API key in ~/.config/xweb/config.json"
+- 示例: ProviderError 应补充 "Check your API key in ~/.config/xweb/default.json"
 - 整改: 审查所有 XwebError 子类，补充修复建议
 
 ### 10. --json 模式下错误未以 JSON 输出

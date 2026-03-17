@@ -182,7 +182,7 @@ JSON (`--json`):
 
 ## 配置
 
-配置文件位于 `~/.config/xweb/config.json`。无配置文件时使用默认值。
+配置文件位于 `~/.config/xweb/default.json`。无配置文件时使用默认值。
 
 ```json
 {

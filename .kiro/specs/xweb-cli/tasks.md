@@ -26,7 +26,7 @@
 
 - [x] 2. 配置管理模块
   - [x] 2.1 实现 Config Manager（`src/config.ts`）
-    - 实现 loadConfig()：从 ~/.config/xweb/config.json 加载配置
+    - 实现 loadConfig()：从 ~/.config/xweb/default.json 加载配置
     - 实现默认配置回退逻辑（文件不存在或 JSON 无效时）
     - 实现 getDefaultConfig() 返回内置默认配置
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_

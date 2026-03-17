@@ -4,7 +4,7 @@ import { homedir } from 'node:os';
 import type { XwebConfig } from './types.js';
 
 const CONFIG_DIR = join(homedir(), '.config', 'xweb');
-const CONFIG_PATH = join(CONFIG_DIR, 'config.json');
+const CONFIG_PATH = join(CONFIG_DIR, 'default.json');
 
 export function getDefaultConfig(): XwebConfig {
   return {

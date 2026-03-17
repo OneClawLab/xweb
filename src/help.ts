@@ -9,7 +9,7 @@ Examples:
   $ xweb explore "https://docs.example.com"           # 发现内部链接
 
 Config:
-  配置文件: ~/.config/xweb/config.json
+  配置文件: ~/.config/xweb/default.json
   无需 API key 即可使用 search (fallback) 和 fetch/explore。
   配置 API key 可获得更好的搜索质量。`;
 
@@ -25,7 +25,7 @@ Provider 选择:
   2. 配置了默认 provider 且有 API key → 使用默认
   3. 否则 fallback 到 simple
 
-Config File (~/.config/xweb/config.json):
+Config File (~/.config/xweb/default.json):
   {
     "default_provider": "brave",
     "providers": { "brave": { "api_key": "BSA-xxx" } },

@@ -12,7 +12,7 @@
 - **Simple_Provider**: 在没有 API Key 时，通过模拟浏览器请求并解析 HTML 来获取搜索结果的内置 Provider
 - **Fetch_Engine**: 负责抓取网页并将 HTML 转化为 LLM 友好格式的模块
 - **Explore_Engine**: 负责发现给定 URL 的内部链接和 Sitemap 的模块
-- **Config_Manager**: 负责加载、验证和管理 `~/.config/xweb/config.json` 配置文件的模块
+- **Config_Manager**: 负责加载、验证和管理 `~/.config/xweb/default.json` 配置文件的模块
 - **Search_Result**: 搜索结果的结构化数据对象，包含 index、title、url、snippet 字段
 - **Fetched_Content**: 抓取后经过清洗和格式转换的网页内容对象
 
@@ -66,7 +66,7 @@
 
 #### 验收标准
 
-1. THE Config_Manager SHALL 从 `~/.config/xweb/config.json` 加载配置
+1. THE Config_Manager SHALL 从 `~/.config/xweb/default.json` 加载配置
 2. WHEN 配置文件不存在, THE Config_Manager SHALL 使用内置默认配置正常运行
 3. WHEN 配置文件包含无效的 JSON, THE Config_Manager SHALL 输出明确的错误信息并使用默认配置
 4. THE Config_Manager SHALL 支持配置 default_provider、providers（含 api_key 和 base_url）以及 fetch_settings（含 user_agent、timeout、max_length）

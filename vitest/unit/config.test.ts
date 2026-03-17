@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
-const CONFIG_PATH = join(homedir(), '.config', 'xweb', 'config.json');
+const CONFIG_PATH = join(homedir(), '.config', 'xweb', 'default.json');
 
 // We mock node:fs to avoid touching the real filesystem
 vi.mock('node:fs', () => ({
