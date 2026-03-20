@@ -1,69 +1,33 @@
-既然要构建一个与 `xdb` 协同的工具链，`xweb` 的设计核心应当是 **“将非结构化的互联网转换为 Agent 可理解的数据流”**。它不应该只是一个简单的下载器，而是一个**互联网感知层**。
+# xweb - web access CLI command
 
-以下是 `xweb` 的完整设计规范。
+A CLI tool designed for AI Agents to access the internet. It abstracts web requests, anti-scraping handling, content extraction, and search aggregation into simple semantic commands, outputting LLM-optimized Markdown or structured JSON.
 
----
+## 决策记录
 
-# CLI Specification: `xweb` (The Agentic Web Access Tool)
+1. **Agent 优先**：所有输出格式（Markdown / JSON）均面向 LLM 消费优化，人类可读是副产品。
+2. **搜索聚合**：支持多个搜索引擎 provider（Google、Brave、Tavily、Serper），无 API Key 时自动 fallback 到模拟浏览器爬虫。
+3. **内容清洗**：fetch 默认剔除导航、页脚、脚本、广告等噪音，保留正文和关键链接。
+4. **不支持动态渲染**：暂不支持 JavaScript 渲染的网页，未来本地安装了 browser 命令后再增加。
 
-**Version:** 1.0.0
-**Status:** Stable-Design
-**Philosophy:** Web as a Data Source (WaaS)
+## 1. Role
 
----
+- **Search**: Aggregate multiple search engine APIs, return structured results.
+- **Fetch**: Convert web pages into LLM-friendly Markdown/text/JSON.
+- **Explore**: Discover internal links and sitemaps for a given domain or URL.
 
-## 1. 核心定位 (Core Positioning)
+## 2. Tech Stack & Project Structure
 
-`xweb` 是为 AI Agent 设计的互联网出口。它将复杂的网络请求、反爬处理、内容提取和搜索聚合抽象为简单的语义指令，输出标准的、经由 LLM 优化的 Markdown 或 JSON。
+遵循 `pai` repo 约定：
 
-## 2. 命令规范 (Command Structure)
+- **TypeScript + ESM** (Node 20+)
+- **构建**: tsup (ESM, shebang banner)
+- **测试**: vitest (unit, pbt, fixtures)
+- **CLI 解析**: commander
+- **HTML to Markdown**: turndown (or similar)
 
-### 2.1 搜索：`xweb search <query>`
+## 3. Data Directory Layout
 
-聚合多个搜索引擎接口，返回结构化的搜索结果。
-
-* **参数:**
-* `-p, --provider`: 显式指定 `google` (默认), `brave`, `tavily`, `serper`。
-* `-n, --limit`: 返回结果条数（默认 5-10）。
-* `--deep`: 深度搜索模式（如果 Provider 支持，如 Tavily 的 research 模式）。
-* `--json`: 强制输出纯 JSON 数组，包含 `title`, `url`, `snippet`。
-
-
-* **默认行为:**
-* 如果没有提供 API Key，尝试使用模拟浏览器头部的轻量级 Google/Bing 爬虫。
-* 如果配置了 Key，优先使用结构化 API。
-
-
-
-### 2.2 抓取：`xweb fetch <url>`
-
-将网页内容转化为 LLM 友好的格式。
-
-* **参数:**
-* `-f, --format`: 输出格式，可选 `markdown` (默认), `text`, `html`, `json`。
-* `--raw`: 不进行清洗，直接输出内容（类似 curl）。
-* `--selector`: 指定 CSS 选择器，仅提取特定部分。
-
-
-* **LLM Friendly 特性:**
-* **Readability:** 自动剔除 `<nav>`, `<footer>`, `<script>`, `<iframe>` 及广告。
-* **Link Mapping:** 将重要的超链接保留在 Markdown 底部或作为元数据。
-* **Image Alt:** 保留图片的 `alt` 描述，帮助多模态 Agent 理解。
-
-
-### 2.3 发现：`xweb explore <url>`
-
-针对给定域名或 URL，发现其内部链接或 Sitemap。
-
-* **意图:** 帮助 Agent 在不知道具体 URL 的情况下，“逛一逛”某个文档中心。
-
----
-
-## 3. 设计细节 (Design Details)
-
-### 3.1 核心 Provider 配置
-
-配置文件位于 `~/.config/xweb/default.json`:
+Config file: `~/.config/xweb/default.json`
 
 ```json
 {
@@ -75,17 +39,50 @@
   "fetch_settings": {
     "user_agent": "Mozilla/5.0...",
     "timeout": 30,
-    "max_length": 50000 
+    "max_length": 50000
   }
 }
-
 ```
 
----
+## 4. CLI Commands
 
-## 4. 技术实现要点 (Implementation)
+### 4.1 `xweb search <query>`
 
-### 4.1 Web Search 模拟逻辑 (Mock Provider)
+Aggregate search engines and return structured results.
+
+**Args**:
+- `-p, --provider` — explicitly specify `google` (default), `brave`, `tavily`, `serper`
+- `-n, --limit` — number of results (default 5-10)
+- `--deep` — deep search mode (if provider supports it, e.g. Tavily research mode)
+- `--json` — force pure JSON array output with `title`, `url`, `snippet`
+
+**Behavior**:
+- 如果没有提供 API Key，尝试使用模拟浏览器头部的轻量级 Google/Bing 爬虫。
+- 如果配置了 Key，优先使用结构化 API。
+
+### 4.2 `xweb fetch <url>`
+
+Convert web page content into LLM-friendly format.
+
+**Args**:
+- `-f, --format` — output format: `markdown` (default), `text`, `html`, `json`
+- `--raw` — skip cleaning, output raw content (similar to curl)
+- `--selector` — CSS selector to extract specific parts only
+
+**LLM-Friendly Features**:
+- **Readability**: 自动剔除 `<nav>`, `<footer>`, `<script>`, `<iframe>` 及广告。
+- **Link Mapping**: 将重要的超链接保留在 Markdown 底部或作为元数据。
+- **Image Alt**: 保留图片的 `alt` 描述，帮助多模态 Agent 理解。
+
+### 4.3 `xweb explore <url>`
+
+Discover internal links or sitemap for a given domain/URL.
+
+**Intent**: 帮助 Agent 在不知道具体 URL 的情况下，"逛一逛"某个文档中心。
+
+## 5. Implementation Details
+
+### 5.1 Mock Search Provider
 
 在没有 API Key 时，`xweb` 内部实现一套简单的模拟逻辑：
 
@@ -94,14 +91,25 @@
 3. 使用正则或轻量级解析器提取 `div.g` 下的标题和链接。
 4. 封装成与 Brave/Tavily 一致的 JSON 格式返回。
 
-### 4.2 Web Fetch 转化逻辑
+### 5.2 Web Fetch Pipeline
 
-* **HTML to Markdown:** 推荐使用类似 `turndown` (Node.js) 的库。
-* **动态渲染的网页:** 暂不支持，未来本地安装了 browser 命令 后 再增加。
+- **HTML to Markdown**: 推荐使用类似 `turndown` (Node.js) 的库。
+- **动态渲染的网页**: 暂不支持，未来本地安装了 browser 命令后再增加。
 
----
+## 6. Output Format
 
-## 5. 接口响应示例 (Response)
+### 6.1 stdout / stderr Contract
+
+- `stdout`: Command result data (search results, fetched content, link list).
+- `stderr`: Progress, debug, error, and warning messages.
+
+### 6.2 Human / Machine Readability
+
+- Default output is human-readable Markdown.
+- `--json` enables structured JSON output.
+- TTY auto-detection: TTY → Markdown, Pipe → JSON.
+
+### 6.3 Response Examples
 
 #### `xweb search "rust vs go" --json`
 
@@ -114,7 +122,6 @@
     "snippet": "A comprehensive comparison of memory safety and performance..."
   }
 ]
-
 ```
 
 #### `xweb fetch "url"`
@@ -130,6 +137,20 @@ source: https://tech-blog.com/rust-go
 Both languages have evolved...
 
 [1] Benchmark details: https://tech-blog.com/benchmarks
-
 ```
 
+## 7. Error Handling & Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Logic error (fetch failed, no search results, etc.) |
+| `2` | Usage/argument error (missing required args, invalid URL, etc.) |
+
+Error output to `stderr`, format `Error: <what went wrong> - <how to fix>`.
+
+## 8. Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| (None) | xweb reads config from its config file | `~/.config/xweb/default.json` |
