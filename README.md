@@ -12,6 +12,14 @@ Internet access CLI for AI agents and humans. Converts unstructured web content 
 
 ## Install
 
+### From npm
+
+```bash
+npm install -g @theclawlab/xweb
+```
+
+### From source
+
 ```bash
 npm install
 npm run build
