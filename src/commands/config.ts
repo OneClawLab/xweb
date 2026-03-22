@@ -36,7 +36,8 @@ export function handleConfig(opts: ConfigOptions): void {
   // All actions below require --name
   if (!opts.name) {
     // No action, no name → show full config
-    if (actions.length === 0) {
+    // --show without --name also shows full config
+    if (actions.length === 0 || opts.show) {
       showFullConfig(config, !!opts.json);
       return;
     }

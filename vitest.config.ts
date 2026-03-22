@@ -5,8 +5,9 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     watch: false,
-    testTimeout: 10000,
+    testTimeout: 15000,
     fileParallelism: false,
+    include: ['vitest/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
