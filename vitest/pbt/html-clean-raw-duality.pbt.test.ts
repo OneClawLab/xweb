@@ -39,9 +39,14 @@ const htmlWithUnwantedArb = fc
   })
   .filter(
     ({ mainContent, navContent, footerContent, scriptContent, iframeContent }) => {
-      // Ensure all markers are distinct so we can test presence/absence independently
-      const set = new Set([mainContent, navContent, footerContent, scriptContent, iframeContent]);
-      return set.size === 5;
+      const markers = [mainContent, navContent, footerContent, scriptContent, iframeContent];
+      // Ensure all markers are distinct and none is a substring of another
+      for (let i = 0; i < markers.length; i++) {
+        for (let j = 0; j < markers.length; j++) {
+          if (i !== j && markers[j]!.includes(markers[i]!)) return false;
+        }
+      }
+      return true;
     },
   )
   .map(({ mainContent, navContent, footerContent, scriptContent, iframeContent }) => ({
