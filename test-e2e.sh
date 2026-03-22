@@ -13,158 +13,113 @@
 #
 set -uo pipefail
 
+source "$(dirname "$0")/scripts/e2e-lib.sh"
+
 XWEB="xweb"
-TD=$(mktemp -d)
-PASS=0; FAIL=0
 
-cleanup() { rm -rf "$TD"; }
-trap cleanup EXIT
-
-G() { printf "\033[32m  ✓ %s\033[0m\n" "$*"; PASS=$((PASS+1)); }
-R() { printf "\033[31m  ✗ %s\033[0m\n" "$*"; FAIL=$((FAIL+1)); }
-S() { echo ""; printf "\033[33m━━ %s ━━\033[0m\n" "$*"; }
-
-# Convert a bash path to a form node.js can read (handles Windows/MSYS2)
-np() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else echo "$1"; fi; }
+setup_e2e
 
 # ── Pre-flight ────────────────────────────────────────────────
-S "Pre-flight"
-if $XWEB --version >/dev/null 2>&1; then G "xweb binary OK"; else R "xweb broken — run npm run build"; exit 1; fi
-if curl -sf --max-time 5 "https://example.com" >/dev/null 2>&1; then G "internet reachable"; else R "no internet access"; exit 1; fi
+section "Pre-flight"
+
+require_bin $XWEB "run npm run build"
+
+if curl -sf --max-time 5 "https://example.com" >/dev/null 2>&1; then
+  pass "internet reachable"
+else
+  fail "no internet access"; exit 1
+fi
 
 # ══════════════════════════════════════════════════════════════
 # 1. search — basic
 # ══════════════════════════════════════════════════════════════
-S "1. search — basic"
-OUT="$TD/1.txt"
-$XWEB search "bash scripting tutorial" >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
+section "1. search — basic"
+run_cmd $XWEB search "bash scripting tutorial"
+assert_exit0
+assert_nonempty
 
 # ══════════════════════════════════════════════════════════════
 # 2. search --json
 # ══════════════════════════════════════════════════════════════
-S "2. search --json"
-OUT="$TD/2.txt"
-$XWEB search "linux command line" --json >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!Array.isArray(d)||!d[0]?.url) throw 0" "$(np "$OUT")" 2>/dev/null; then
-  G "valid JSON array with url field"
-else
-  R "invalid JSON or missing url"
-fi
+section "2. search --json"
+run_cmd $XWEB search "linux command line" --json
+assert_exit0
+assert_json_array
+assert_contains '"url"'
 
 # ══════════════════════════════════════════════════════════════
 # 3. search --limit
 # ══════════════════════════════════════════════════════════════
-S "3. search --limit"
-OUT="$TD/3.txt"
-$XWEB search "docker tutorial" --limit 2 --json >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-COUNT=$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).length))" "$(np "$OUT")" 2>/dev/null)
-[[ "$COUNT" -le 2 ]] && G "respects --limit 2 (got $COUNT)" || R "--limit not respected (got $COUNT)"
+section "3. search --limit"
+run_cmd $XWEB search "docker tutorial" --limit 2 --json
+assert_exit0
+assert_json_array_length_lte "$OUT" 2
 
 # ══════════════════════════════════════════════════════════════
 # 4. fetch — markdown (default)
 # ══════════════════════════════════════════════════════════════
-S "4. fetch — markdown"
-OUT="$TD/4.txt"
-$XWEB fetch "https://example.com" >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
-grep -q "^---" "$OUT" && G "has YAML front matter" || R "missing front matter"
+section "4. fetch — markdown"
+run_cmd $XWEB fetch "https://example.com"
+assert_exit0
+assert_nonempty
+assert_contains "^---"
 
 # ══════════════════════════════════════════════════════════════
 # 5. fetch --format json
 # ══════════════════════════════════════════════════════════════
-S "5. fetch --format json"
-OUT="$TD/5.txt"
-$XWEB fetch "https://example.com" --format json >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!d.title||!d.source||!d.content) throw 0" "$(np "$OUT")" 2>/dev/null; then
-  G "valid JSON with title/source/content"
-else
-  R "invalid JSON or missing fields"
-fi
+section "5. fetch --format json"
+run_cmd $XWEB fetch "https://example.com" --format json
+assert_exit0
+assert_json_field "$OUT" "title"
+assert_json_field "$OUT" "source"
+assert_json_field "$OUT" "content"
 
 # ══════════════════════════════════════════════════════════════
 # 6. fetch --format text
 # ══════════════════════════════════════════════════════════════
-S "6. fetch --format text"
-OUT="$TD/6.txt"
-$XWEB fetch "https://example.com" --format text >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
+section "6. fetch --format text"
+run_cmd $XWEB fetch "https://example.com" --format text
+assert_exit0
+assert_nonempty
 
 # ══════════════════════════════════════════════════════════════
 # 7. fetch --raw
 # ══════════════════════════════════════════════════════════════
-S "7. fetch --raw"
-OUT="$TD/7.txt"
-$XWEB fetch "https://example.com" --raw >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
-# --raw skips HTML cleaning but still converts to markdown; output has front matter
-grep -q "^---" "$OUT" && G "has front matter (raw mode still outputs markdown)" || R "missing front matter"
+section "7. fetch --raw"
+run_cmd $XWEB fetch "https://example.com" --raw
+assert_exit0
+assert_nonempty
+assert_contains "^---"
 
 # ══════════════════════════════════════════════════════════════
 # 8. fetch --selector
 # ══════════════════════════════════════════════════════════════
-S "8. fetch --selector"
-OUT="$TD/8.txt"
-$XWEB fetch "https://example.com" --selector "body" >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
+section "8. fetch --selector"
+run_cmd $XWEB fetch "https://example.com" --selector "body"
+assert_exit0
+assert_nonempty
 
 # ══════════════════════════════════════════════════════════════
 # 9. explore
 # ══════════════════════════════════════════════════════════════
-S "9. explore"
-OUT="$TD/9.txt"
-$XWEB explore "https://example.com" >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
+section "9. explore"
+run_cmd $XWEB explore "https://example.com"
+assert_exit0
+assert_nonempty
 
 # ══════════════════════════════════════════════════════════════
 # 10. explore --json
 # ══════════════════════════════════════════════════════════════
-S "10. explore --json"
-OUT="$TD/10.txt"
-$XWEB explore "https://example.com" --json >"$OUT" 2>/dev/null
-EC=$?
-[[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!Array.isArray(d)) throw 0" "$(np "$OUT")" 2>/dev/null; then
-  G "valid JSON array"
-else
-  R "invalid JSON or not array"
-fi
+section "10. explore --json"
+run_cmd $XWEB explore "https://example.com" --json
+assert_exit0
+assert_json_array
 
 # ══════════════════════════════════════════════════════════════
-# 11. fetch — invalid URL exits 1
+# 11. fetch — invalid URL exits non-zero
 # ══════════════════════════════════════════════════════════════
-S "11. fetch — invalid URL"
-$XWEB fetch "not-a-url" >/dev/null 2>&1
-EC=$?
-[[ $EC -ne 0 ]] && G "non-zero exit for invalid URL" || R "expected non-zero exit"
+section "11. fetch — invalid URL"
+run_cmd $XWEB fetch "not-a-url"
+assert_nonzero_exit
 
-# ══════════════════════════════════════════════════════════════
-# Summary
-# ══════════════════════════════════════════════════════════════
-S "Results"
-echo ""
-TOTAL=$((PASS + FAIL))
-printf "  Passed: \033[32m%d\033[0m\n" "$PASS"
-printf "  Failed: %s\n" "$( [[ $FAIL -gt 0 ]] && printf "\033[31m%d\033[0m" "$FAIL" || echo 0 )"
-echo "  Total:  $TOTAL"
-echo ""
-[[ $FAIL -eq 0 ]] && printf "\033[32mAll tests passed!\033[0m\n" && exit 0
-printf "\033[31mSome tests failed.\033[0m\n" && exit 1
+summary_and_exit
