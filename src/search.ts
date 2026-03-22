@@ -57,8 +57,21 @@ export async function executeSearch(
   providerName?: string,
 ): Promise<SearchResult[]> {
   const provider = resolveProvider(providerName, config, registry);
-  const results = await provider.search(query, options);
-  return results.slice(0, options.limit).map((r, i) => ({ ...r, index: i + 1 }));
+  try {
+    const results = await provider.search(query, options);
+    return results.slice(0, options.limit).map((r, i) => ({ ...r, index: i + 1 }));
+  } catch (err) {
+    // If a non-simple provider fails and no explicit provider was requested,
+    // fall back to the simple provider automatically.
+    if (!providerName && provider.name !== 'simple') {
+      const simple = registry.get('simple');
+      if (simple) {
+        const results = await simple.search(query, options);
+        return results.slice(0, options.limit).map((r, i) => ({ ...r, index: i + 1 }));
+      }
+    }
+    throw err;
+  }
 }
 
 export function createDefaultRegistry(): ProviderRegistry {

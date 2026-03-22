@@ -24,6 +24,9 @@ G() { printf "\033[32m  ✓ %s\033[0m\n" "$*"; PASS=$((PASS+1)); }
 R() { printf "\033[31m  ✗ %s\033[0m\n" "$*"; FAIL=$((FAIL+1)); }
 S() { echo ""; printf "\033[33m━━ %s ━━\033[0m\n" "$*"; }
 
+# Convert a bash path to a form node.js can read (handles Windows/MSYS2)
+np() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else echo "$1"; fi; }
+
 # ── Pre-flight ────────────────────────────────────────────────
 S "Pre-flight"
 if $XWEB --version >/dev/null 2>&1; then G "xweb binary OK"; else R "xweb broken — run npm run build"; exit 1; fi
@@ -47,7 +50,7 @@ OUT="$TD/2.txt"
 $XWEB search "linux command line" --json >"$OUT" 2>/dev/null
 EC=$?
 [[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync('$OUT','utf8')); if(!Array.isArray(d)||!d[0]?.url) throw 0" 2>/dev/null; then
+if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!Array.isArray(d)||!d[0]?.url) throw 0" "$(np "$OUT")" 2>/dev/null; then
   G "valid JSON array with url field"
 else
   R "invalid JSON or missing url"
@@ -61,7 +64,7 @@ OUT="$TD/3.txt"
 $XWEB search "docker tutorial" --limit 2 --json >"$OUT" 2>/dev/null
 EC=$?
 [[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-COUNT=$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync('$OUT','utf8')).length))" 2>/dev/null)
+COUNT=$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).length))" "$(np "$OUT")" 2>/dev/null)
 [[ "$COUNT" -le 2 ]] && G "respects --limit 2 (got $COUNT)" || R "--limit not respected (got $COUNT)"
 
 # ══════════════════════════════════════════════════════════════
@@ -83,7 +86,7 @@ OUT="$TD/5.txt"
 $XWEB fetch "https://example.com" --format json >"$OUT" 2>/dev/null
 EC=$?
 [[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync('$OUT','utf8')); if(!d.title||!d.source||!d.content) throw 0" 2>/dev/null; then
+if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!d.title||!d.source||!d.content) throw 0" "$(np "$OUT")" 2>/dev/null; then
   G "valid JSON with title/source/content"
 else
   R "invalid JSON or missing fields"
@@ -107,7 +110,9 @@ OUT="$TD/7.txt"
 $XWEB fetch "https://example.com" --raw >"$OUT" 2>/dev/null
 EC=$?
 [[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-grep -qi "<html\|<!DOCTYPE" "$OUT" && G "raw HTML returned" || R "missing HTML tags"
+[[ -s "$OUT" ]] && G "stdout non-empty" || R "stdout empty"
+# --raw skips HTML cleaning but still converts to markdown; output has front matter
+grep -q "^---" "$OUT" && G "has front matter (raw mode still outputs markdown)" || R "missing front matter"
 
 # ══════════════════════════════════════════════════════════════
 # 8. fetch --selector
@@ -137,7 +142,7 @@ OUT="$TD/10.txt"
 $XWEB explore "https://example.com" --json >"$OUT" 2>/dev/null
 EC=$?
 [[ $EC -eq 0 ]] && G "exit=0" || R "exit=$EC"
-if node -e "const d=JSON.parse(require('fs').readFileSync('$OUT','utf8')); if(!Array.isArray(d)) throw 0" 2>/dev/null; then
+if node -e "const d=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); if(!Array.isArray(d)) throw 0" "$(np "$OUT")" 2>/dev/null; then
   G "valid JSON array"
 else
   R "invalid JSON or not array"

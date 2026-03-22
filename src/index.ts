@@ -163,6 +163,9 @@ async function main() {
       process.exit(1);
     }
     console.error(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && error.cause) {
+      console.error(`  cause: ${error.cause instanceof Error ? error.cause.message : String(error.cause)}`);
+    }
     process.exit(1);
   }
 }
