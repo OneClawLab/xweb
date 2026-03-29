@@ -186,7 +186,7 @@ describe('executeSearch', () => {
       'brave',
     );
 
-    expect(results[0].title).toContain('brave');
+    expect(results[0]!.title).toContain('brave');
   });
 });
 
