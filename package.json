@@ -1,7 +1,7 @@
 {
   "name": "@theclawlab/xweb",
   "type": "module",
-  "version": "1.0.9",
+  "version": "2.1.0",
   "description": "xweb is a CLI tool for AI Agents to access the internet, converting unstructured web content into LLM-friendly data streams.",
   "bin": {
     "xweb": "dist/index.js"
